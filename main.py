@@ -1,6 +1,6 @@
 import asyncio
 from collections import namedtuple
-from contextlib import contextmanager, asynccontextmanager
+from contextlib import asynccontextmanager
 import time
 from enum import Enum
 from os import listdir
@@ -21,15 +21,16 @@ from text_tools import calculate_jaundice_rate, split_by_words
 
 CHARGED_DICTS_FOLDER = 'charged_dict'
 TEST_ARTICLES = [
-    'https://inosmi.ru/not/exist.html',
+    'https://inosmi.ru/not/exist.html',  # FETCH_ERROR
     'https://inosmi.ru/20230609/ukraina-263511718.html',
     'https://inosmi.ru/20230528/mozg-263202267.html',
     'https://inosmi.ru/20230609/briks-263527997.html',
-    'https://lenta.ru/brief/2021/08/26/afg_terror/',
+    'https://lenta.ru/brief/2021/08/26/afg_terror/',  # PARSING_ERROR
 ]
 TIMEOUT_SEC = 3  # максимальное время ожидания ответа от ресурса/функции
 
 Result = namedtuple('Result', 'status url score words_count')
+results: list[Result] = []
 
 
 logging.basicConfig(level=logging.INFO)
@@ -117,18 +118,16 @@ async def process_article(session, morph, charged_words, url, results, /):
     results.append(Result(ProcessingStatus.OK.value, url, score, words_count))
 
 
-async def main():
+async def main(test_articles: list):
 
     charged_words = await get_charged_words()
     print(charged_words)
-
-    results = []
 
     async with aiohttp.ClientSession() as session:
         morph = pymorphy2.MorphAnalyzer()
 
         async with create_task_group() as tg:
-            for url in TEST_ARTICLES:
+            for url in test_articles:
                 tg.start_soon(
                     process_article,
                     session,
@@ -147,4 +146,4 @@ async def main():
 
 if __name__ == '__main__':
 
-    run(main)
+    run(main, TEST_ARTICLES)
