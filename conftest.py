@@ -18,5 +18,7 @@ async def response(aiohttp_client):
     client = await aiohttp_client(app)
     resp = await client.get('/?urls=' + ','.join(TEST_ARTICLES))
     assert resp.status == 200
+    resp = await resp.json()
+    assert len(resp) == len(TEST_ARTICLES)  # FIXME почему увеличивается список ответов после каждого запроса?
 
-    yield await resp.json()
+    yield resp
