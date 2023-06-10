@@ -26,12 +26,16 @@ python main.py
 
 Для тестирования используется [pytest](https://docs.pytest.org/en/latest/), тестами покрыты фрагменты кода сложные в отладке: text_tools.py и адаптеры. Команды для запуска тестов:
 
-```
+```commandline
 python -m pytest adapters/inosmi_ru.py
 ```
 
-```
+```commandline
 python -m pytest text_tools.py
+```
+
+```commandline
+python -m pytest server.py
 ```
 
 # Цели проекта
