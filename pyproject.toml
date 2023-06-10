@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "jaundice-rate"
+version = "0.1.0"
+description = ""
+authors = ["Sergei Klimov <s.klimov@bk.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+aiohttp = "^3.8.4"
+beautifulsoup4 = "^4.12.2"
+requests = "^2.31.0"
+pymorphy2 = "^0.9.1"
+pytest = "^7.3.1"
+anyio = "^3.7.0"
+aiologger = "^0.7.0"
+aiofile = "^3.8.7"
+blue = "^0.9.1"
+pytest-asyncio = "^0.21.0"
+pytest-trio = "^0.8.0"
+pytest-aiohttp = "^1.0.4"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -vvv"
+testpaths = [
+    "tests",
+    "integration",
+]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
