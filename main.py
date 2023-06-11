@@ -91,7 +91,7 @@ async def process_article(
     url: str,
     results: list[Result],
     /,
-) -> object:
+):
     """
     Анализирует статью на 'желутшность'. Результат сохраняется в списке results
     @param session: соединения
