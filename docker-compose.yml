@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:
+  server:
+    build: .
+    command: poetry run python server.py
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - .:/app/
+    ports:
+      - ${SERVICE_PORT}:8080
+    container_name: jaundice-rate
+
+  redis:
+    image: redis:latest
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    container_name: redis-jaundice-rate

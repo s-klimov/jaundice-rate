@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from collections import namedtuple
 from contextlib import asynccontextmanager
 import time
@@ -15,12 +16,16 @@ from aiohttp import ClientResponseError, ClientConnectorError
 from aiologger import Logger
 from anyio import create_task_group, run
 from async_timeout import timeout
+from dotenv import load_dotenv
 
 from adapters import SANITIZERS, ArticleNotFound
 from text_tools import calculate_jaundice_rate, split_by_words
 
+load_dotenv()
 
-CHARGED_DICTS_FOLDER = 'charged_dict'
+# название папки, в которой хранятся словари 'заряженных слов'
+CHARGED_DICTS_FOLDER = os.environ.get('CHARGED_DICTS_FOLDER', 'charged_dict')
+
 TEST_ARTICLES = [
     'https://inosmi.ru/not/exist.html',  # FETCH_ERROR
     'https://inosmi.ru/20230609/ukraina-263511718.html',

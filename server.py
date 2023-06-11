@@ -1,10 +1,15 @@
+import os
 from unittest.mock import patch
 
 from aiohttp import web
+from dotenv import load_dotenv
 
 from main import main
 
-MAX_ARTICLES_COUNT = 10
+load_dotenv()
+
+# количество одновременно обрабатываемых статей для защиты от DOS-атак
+MAX_ARTICLES_COUNT = int(os.environ.get('MAX_ARTICLES_COUNT', 10))
 
 
 async def handle(request):
