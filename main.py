@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from collections import namedtuple
 from contextlib import asynccontextmanager
 import time
@@ -11,7 +12,7 @@ import aiohttp
 import pymorphy2
 from aiofile import async_open
 from aiohttp import ClientResponseError, ClientConnectorError
-import logging
+from aiologger import Logger
 from anyio import create_task_group, run
 from async_timeout import timeout
 
@@ -30,11 +31,9 @@ TEST_ARTICLES = [
 TIMEOUT_SEC = 3  # максимальное время ожидания ответа от ресурса/функции
 
 Result = namedtuple('Result', 'status url score words_count')
-results: list[Result] = []
 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = Logger.with_default_handlers(level=logging.INFO)
 
 
 class ProcessingStatus(Enum):
@@ -50,7 +49,8 @@ async def fetch(session, url):
         return await response.text()
 
 
-async def get_charged_words():
+async def get_charged_words() -> list[str]:
+    """Получает из директории CHARGED_DICTS_FOLDER список 'заряженных' слов и возвращает его."""
 
     dict_files = [
         join(CHARGED_DICTS_FOLDER, f)
@@ -70,16 +70,32 @@ async def get_charged_words():
 
 @asynccontextmanager
 async def get_run_time(*args, **kwds):
+    """Контекстный менеджер, вычисляющий время выполнения фрагмента кода."""
     start = time.monotonic()
     try:
         yield
     finally:
         end = time.monotonic()
-    logger.info('Анализ закончен за {:.2} сек'.format(end - start))
+    await logger.info('Анализ закончен за {:.2} сек'.format(end - start))
 
 
-async def process_article(session, morph, charged_words, url, results, /):
-
+async def process_article(
+    session: aiohttp.ClientSession,
+    morph: pymorphy2.MorphAnalyzer,
+    charged_words: list[str],
+    url: str,
+    results: list[Result],
+    /,
+) -> object:
+    """
+    Анализирует статью на 'желутшность'. Результат сохраняется в списке results
+    @param session: соединения
+    @param morph: библиотека pymorphy2 для работы с текстом
+    @param charged_words: список 'заряженных' слов
+    @param url: адрес статьи
+    @param results: список, в который сохраняется результат анализа статьи
+    @return:
+    """
     try:
         async with timeout(TIMEOUT_SEC):
             html = await fetch(session, url)
@@ -118,10 +134,16 @@ async def process_article(session, morph, charged_words, url, results, /):
     results.append(Result(ProcessingStatus.OK.value, url, score, words_count))
 
 
-async def main(test_articles: list):
+async def main(test_articles: list[str]) -> list[Result]:
+    """
+    Принимает на вход список статей и возвращает список результатов их обработки
+    @param test_articles: список адресов статей
+    @return:
+    """
+    results: list[Result] = []
 
     charged_words = await get_charged_words()
-    print(charged_words)
+    await logger.debug(charged_words)
 
     async with aiohttp.ClientSession() as session:
         morph = pymorphy2.MorphAnalyzer()
@@ -138,10 +160,12 @@ async def main(test_articles: list):
                 )
 
     for result in results:
-        print('Статус:', result.status)
-        print('URL:', result.url)
-        print('Рейтинг:', result.score)
-        print('Слов в статье:', result.words_count)
+        await logger.info(f'Статус: {result.status}')
+        await logger.info(f'URL: {result.url}')
+        await logger.info(f'Рейтинг: {result.score}')
+        await logger.info(f'Слов в статье: {result.words_count}')
+
+    return results
 
 
 if __name__ == '__main__':

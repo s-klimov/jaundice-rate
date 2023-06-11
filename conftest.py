@@ -15,10 +15,12 @@ def event_loop():
 
 @pytest.fixture
 async def response(aiohttp_client):
+    """Фикстура ответа тестируемого сервиса"""
+
     client = await aiohttp_client(app)
     resp = await client.get('/?urls=' + ','.join(TEST_ARTICLES))
     assert resp.status == 200
     resp = await resp.json()
-    assert len(resp) == len(TEST_ARTICLES)  # FIXME почему увеличивается список ответов после каждого запроса?
+    assert len(resp) == len(TEST_ARTICLES)
 
     yield resp
