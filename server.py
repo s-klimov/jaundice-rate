@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from aiohttp import web
 
-from main import main, results, TEST_ARTICLES
+from main import main, TEST_ARTICLES
 
 MAX_ARTICLES_COUNT = 10
 
@@ -16,7 +16,7 @@ async def handle(request):
             message = f'too many urls in request, should be {MAX_ARTICLES_COUNT} or less'
             return web.json_response(data={'error': message}, status=400)
 
-        await main(articles)
+        results = await main(articles)
         response = [result._asdict() for result in results]
 
     return web.json_response(response)

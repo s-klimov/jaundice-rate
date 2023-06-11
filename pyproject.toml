@@ -22,7 +22,7 @@ pytest-aiohttp = "^1.0.4"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -vvv"
+addopts = "-ra -s -vvv --log-cli-level=INFO"
 testpaths = [
     "tests",
     "integration",
