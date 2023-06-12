@@ -1,6 +1,7 @@
 import os
 from unittest.mock import patch
 
+import pymorphy2
 from aiocache import Cache
 from aiohttp import web
 from dotenv import load_dotenv
@@ -30,7 +31,7 @@ async def handle(request):
             return web.json_response(data={'error': message}, status=400)
 
         async with cache:
-            results = await main(articles)
+            results = await main(app['morph'], articles)
         response = [result._asdict() for result in results]
 
     return web.json_response(response)
@@ -86,4 +87,5 @@ async def test_process_article_timeout_error(aiohttp_client, response):
 
 
 if __name__ == '__main__':
+    app['morph'] = pymorphy2.MorphAnalyzer()
     web.run_app(app)

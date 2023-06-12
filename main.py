@@ -154,9 +154,10 @@ async def process_article(
     endpoint=REDIS_HOST,
     namespace='main',
 )
-async def main(test_articles: list[str]) -> list[Result]:
+async def main(morph: pymorphy2.MorphAnalyzer, test_articles: list[str]) -> list[Result]:
     """
     Принимает на вход список статей и возвращает список результатов их обработки
+    @param morph: библиотека pymorphy2 для работы с текстом
     @param test_articles: список адресов статей
     @return:
     """
@@ -166,7 +167,6 @@ async def main(test_articles: list[str]) -> list[Result]:
     await logger.debug(charged_words)
 
     async with aiohttp.ClientSession() as session:
-        morph = pymorphy2.MorphAnalyzer()
 
         async with create_task_group() as tg:
             for url in test_articles:
@@ -185,5 +185,5 @@ async def main(test_articles: list[str]) -> list[Result]:
 
 
 if __name__ == '__main__':
-
-    run(main, TEST_ARTICLES)
+    morph = pymorphy2.MorphAnalyzer()
+    run(main, morph, TEST_ARTICLES)
