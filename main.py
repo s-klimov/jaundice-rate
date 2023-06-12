@@ -32,6 +32,8 @@ CHARGED_DICTS_FOLDER = os.environ.get('CHARGED_DICTS_FOLDER', 'charged_dict')
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
 REDIS_HOST, REDIS_PORT = urlparse(REDIS_URL).hostname, urlparse(REDIS_URL).port
 
+REDIS_STORAGE_TIME = int(os.environ.get('REDIS_STORAGE_TIME', 120))
+
 TEST_ARTICLES = [
     'https://inosmi.ru/not/exist.html',  # FETCH_ERROR
     'https://inosmi.ru/20230609/ukraina-263511718.html',
@@ -146,7 +148,7 @@ async def process_article(
 
 
 @cached(
-    ttl=120,
+    ttl=REDIS_STORAGE_TIME,
     cache=Cache.REDIS,
     key_builder=lambda *args, **kw: 'key',
     serializer=PickleSerializer(),
@@ -154,7 +156,9 @@ async def process_article(
     endpoint=REDIS_HOST,
     namespace='main',
 )
-async def main(morph: pymorphy2.MorphAnalyzer, test_articles: list[str]) -> list[Result]:
+async def main(
+    morph: pymorphy2.MorphAnalyzer, test_articles: list[str]
+) -> list[Result]:
     """
     Принимает на вход список статей и возвращает список результатов их обработки
     @param morph: библиотека pymorphy2 для работы с текстом
