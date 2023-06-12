@@ -16,7 +16,7 @@ services:
   redis:
     image: redis:latest
     volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - ./conf/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - ALLOW_EMPTY_PASSWORD = yes
     container_name: redis-jaundice-rate
