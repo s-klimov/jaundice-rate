@@ -1,15 +1,18 @@
 import os
 from unittest.mock import patch
 
+from aiocache import Cache
 from aiohttp import web
 from dotenv import load_dotenv
 
-from main import main
+from main import main, REDIS_URL
 
 load_dotenv()
 
 # количество одновременно обрабатываемых статей для защиты от DOS-атак
 MAX_ARTICLES_COUNT = int(os.environ.get('MAX_ARTICLES_COUNT', 10))
+
+cache = Cache.from_url(REDIS_URL)
 
 
 async def handle(request):
@@ -26,7 +29,8 @@ async def handle(request):
             message = f'too many urls in request, should be {MAX_ARTICLES_COUNT} or less'
             return web.json_response(data={'error': message}, status=400)
 
-        results = await main(articles)
+        async with cache:
+            results = await main(articles)
         response = [result._asdict() for result in results]
 
     return web.json_response(response)

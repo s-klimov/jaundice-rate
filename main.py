@@ -11,12 +11,15 @@ from os.path import isfile, join
 import aiohttp
 
 import pymorphy2
+from aiocache import cached, Cache
+from aiocache.serializers import PickleSerializer
 from aiofile import async_open
 from aiohttp import ClientResponseError, ClientConnectorError
 from aiologger import Logger
 from anyio import create_task_group, run
 from async_timeout import timeout
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 from adapters import SANITIZERS, ArticleNotFound
 from text_tools import calculate_jaundice_rate, split_by_words
@@ -25,6 +28,9 @@ load_dotenv()
 
 # название папки, в которой хранятся словари 'заряженных слов'
 CHARGED_DICTS_FOLDER = os.environ.get('CHARGED_DICTS_FOLDER', 'charged_dict')
+
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
+REDIS_HOST, REDIS_PORT = urlparse(REDIS_URL).hostname, urlparse(REDIS_URL).port
 
 TEST_ARTICLES = [
     'https://inosmi.ru/not/exist.html',  # FETCH_ERROR
@@ -91,7 +97,7 @@ async def process_article(
     url: str,
     results: list[Result],
     /,
-) -> object:
+):
     """
     Анализирует статью на 'желутшность'. Результат сохраняется в списке results
     @param session: соединения
@@ -139,6 +145,15 @@ async def process_article(
     results.append(Result(ProcessingStatus.OK.value, url, score, words_count))
 
 
+@cached(
+    ttl=120,
+    cache=Cache.REDIS,
+    key_builder=lambda *args, **kw: 'key',
+    serializer=PickleSerializer(),
+    port=REDIS_PORT,
+    endpoint=REDIS_HOST,
+    namespace='main',
+)
 async def main(test_articles: list[str]) -> list[Result]:
     """
     Принимает на вход список статей и возвращает список результатов их обработки
@@ -164,11 +179,7 @@ async def main(test_articles: list[str]) -> list[Result]:
                     results,
                 )
 
-    for result in results:
-        await logger.info(f'Статус: {result.status}')
-        await logger.info(f'URL: {result.url}')
-        await logger.info(f'Рейтинг: {result.score}')
-        await logger.info(f'Слов в статье: {result.words_count}')
+    [await logger.info(result._asdict()) for result in results]
 
     return results
 
