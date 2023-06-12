@@ -1,20 +1,19 @@
 import os
 from unittest.mock import patch
 
-from aiocache import cached, Cache
-from aiocache.serializers import PickleSerializer
+from aiocache import Cache
 from aiohttp import web
 from dotenv import load_dotenv
 
-from main import main
+from main import main, REDIS_URL
 
 load_dotenv()
 
 # количество одновременно обрабатываемых статей для защиты от DOS-атак
 MAX_ARTICLES_COUNT = int(os.environ.get('MAX_ARTICLES_COUNT', 10))
-REDIS_URL = os.environ.get('REDIS_URL', 'redis://redis:6379/0')
 
 cache = Cache.from_url(REDIS_URL)
+
 
 async def handle(request):
     """
