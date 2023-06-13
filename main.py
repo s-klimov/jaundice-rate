@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 from collections import namedtuple
 from contextlib import asynccontextmanager
 import time
@@ -18,19 +17,16 @@ from aiohttp import ClientResponseError, ClientConnectorError
 from aiologger import Logger
 from anyio import create_task_group, run
 from async_timeout import timeout
-from dotenv import load_dotenv
-from urllib.parse import urlparse
 
 from adapters import SANITIZERS, ArticleNotFound
+from constants import (
+    CHARGED_DICTS_FOLDER,
+    REDIS_STORAGE_TIME,
+    REDIS_PORT,
+    REDIS_HOST,
+)
 from text_tools import calculate_jaundice_rate, split_by_words
 
-load_dotenv()
-
-# название папки, в которой хранятся словари 'заряженных слов'
-CHARGED_DICTS_FOLDER = os.environ.get('CHARGED_DICTS_FOLDER', 'charged_dict')
-
-REDIS_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
-REDIS_HOST, REDIS_PORT = urlparse(REDIS_URL).hostname, urlparse(REDIS_URL).port
 
 TEST_ARTICLES = [
     'https://inosmi.ru/not/exist.html',  # FETCH_ERROR
@@ -146,7 +142,7 @@ async def process_article(
 
 
 @cached(
-    ttl=120,
+    ttl=REDIS_STORAGE_TIME,
     cache=Cache.REDIS,
     key_builder=lambda *args, **kw: 'key',
     serializer=PickleSerializer(),
@@ -154,9 +150,12 @@ async def process_article(
     endpoint=REDIS_HOST,
     namespace='main',
 )
-async def main(test_articles: list[str]) -> list[Result]:
+async def main(
+    morph: pymorphy2.MorphAnalyzer, test_articles: list[str]
+) -> list[Result]:
     """
     Принимает на вход список статей и возвращает список результатов их обработки
+    @param morph: библиотека pymorphy2 для работы с текстом
     @param test_articles: список адресов статей
     @return:
     """
@@ -166,7 +165,6 @@ async def main(test_articles: list[str]) -> list[Result]:
     await logger.debug(charged_words)
 
     async with aiohttp.ClientSession() as session:
-        morph = pymorphy2.MorphAnalyzer()
 
         async with create_task_group() as tg:
             for url in test_articles:
@@ -185,5 +183,5 @@ async def main(test_articles: list[str]) -> list[Result]:
 
 
 if __name__ == '__main__':
-
-    run(main, TEST_ARTICLES)
+    morph = pymorphy2.MorphAnalyzer()
+    run(main, morph, TEST_ARTICLES)

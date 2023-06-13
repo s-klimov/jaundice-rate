@@ -38,6 +38,7 @@ CHARGED_DICTS_FOLDER = charged_dict  # название папки, в кото�
 MAX_ARTICLES_COUNT = 10  # количество одновременно обрабатываемых статей для защиты от DOS-атак
 SERVICE_PORT = 8080  # порт, на котором запустится web-сервер
 REDIS_URL = redis://127.0.0.1:6379/0  # адрес REDIS для кэширования результатов запросов
+REDIS_STORAGE_TIME = 120  # время хранения данных в кэше, в секундах
 ```
 
 # Как запустить web-сервер
@@ -51,15 +52,15 @@ python server.py
 Для тестирования используется [pytest](https://docs.pytest.org/en/latest/), тестами покрыты сложные в отладке фрагменты кода: text_tools.py и адаптеры. Команды для запуска тестов:
 
 ```commandline
-python -m pytest adapters/inosmi_ru.py
+python -m pytest tests/inosmi_ru.py
 ```
 
 ```commandline
-python -m pytest text_tools.py
+python -m pytest tests/text_tools.py
 ```
 
 ```commandline
-python -m pytest server.py
+python -m pytest tests/server.py
 ```
 
 # Цели проекта

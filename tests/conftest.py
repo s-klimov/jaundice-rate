@@ -1,5 +1,6 @@
 import asyncio
 
+import pymorphy2
 import pytest
 
 from main import TEST_ARTICLES
@@ -17,6 +18,7 @@ def event_loop():
 async def response(aiohttp_client):
     """Фикстура ответа тестируемого сервиса"""
 
+    app['morph'] = pymorphy2.MorphAnalyzer()
     client = await aiohttp_client(app)
     resp = await client.get('/?urls=' + ','.join(TEST_ARTICLES))
     assert resp.status == 200

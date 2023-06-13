@@ -21,13 +21,17 @@ pytest-aiohttp = "^1.0.4"
 setuptools = "^67.8.0"
 python-dotenv = "^1.0.0"
 aiocache = {extras = ["redis"], version = "^0.12.1"}
+redis = "^4.5.5"
 
 [tool.poetry.dev-dependencies]
 blue = "^0.9.1"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -s -vvv --log-cli-level=INFO"
+addopts = "-ra -s -vvv"
+env = [
+    "REDIS_STORAGE_TIME = 1"
+]
 testpaths = [
     "tests",
     "integration",
