@@ -52,15 +52,15 @@ python server.py
 Для тестирования используется [pytest](https://docs.pytest.org/en/latest/), тестами покрыты сложные в отладке фрагменты кода: text_tools.py и адаптеры. Команды для запуска тестов:
 
 ```commandline
-python -m pytest adapters/inosmi_ru.py
+python -m pytest tests/inosmi_ru.py
 ```
 
 ```commandline
-python -m pytest text_tools.py
+python -m pytest tests/text_tools.py
 ```
 
 ```commandline
-python -m pytest server.py
+python -m pytest tests/server.py
 ```
 
 # Цели проекта

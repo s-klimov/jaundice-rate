@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 from collections import namedtuple
 from contextlib import asynccontextmanager
 import time
@@ -18,21 +17,16 @@ from aiohttp import ClientResponseError, ClientConnectorError
 from aiologger import Logger
 from anyio import create_task_group, run
 from async_timeout import timeout
-from dotenv import load_dotenv
-from urllib.parse import urlparse
 
 from adapters import SANITIZERS, ArticleNotFound
+from constants import (
+    CHARGED_DICTS_FOLDER,
+    REDIS_STORAGE_TIME,
+    REDIS_PORT,
+    REDIS_HOST,
+)
 from text_tools import calculate_jaundice_rate, split_by_words
 
-load_dotenv()
-
-# название папки, в которой хранятся словари 'заряженных слов'
-CHARGED_DICTS_FOLDER = os.environ.get('CHARGED_DICTS_FOLDER', 'charged_dict')
-
-REDIS_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
-REDIS_HOST, REDIS_PORT = urlparse(REDIS_URL).hostname, urlparse(REDIS_URL).port
-
-REDIS_STORAGE_TIME = int(os.environ.get('REDIS_STORAGE_TIME', 120))
 
 TEST_ARTICLES = [
     'https://inosmi.ru/not/exist.html',  # FETCH_ERROR

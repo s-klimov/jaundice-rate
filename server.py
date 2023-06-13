@@ -1,16 +1,9 @@
-import os
-
 import pymorphy2
 from aiocache import Cache
 from aiohttp import web
-from dotenv import load_dotenv
 
-from main import main, REDIS_URL
-
-load_dotenv()
-
-# количество одновременно обрабатываемых статей для защиты от DOS-атак
-MAX_ARTICLES_COUNT = int(os.environ.get('MAX_ARTICLES_COUNT', 10))
+from main import main
+from constants import REDIS_URL, MAX_ARTICLES_COUNT
 
 
 async def handle(request):
